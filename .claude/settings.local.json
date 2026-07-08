@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk 'NR>=172 && NR<=183 {print NR\": \"substr\\($0,1,200\\)}' \"C:/Users/steph/epsi/Acelys/Jour 2/Helpdesk/Helpdesk Kanban \\(claude design\\).html\")",
+      "Bash(python -c ' *)",
+      "Bash(PYTHONIOENCODING=utf-8 python -c ' *)",
+      "Bash(npm --version)",
+      "Bash(ng version *)",
+      "Bash(npx -y @angular/cli@latest version)",
+      "PowerShell(node --version; npm --version; \\(Get-Command node\\).Source; ng version 2>$null | Select-Object -First 6)"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "helpdesk",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": ["/c", "C:\\Users\\steph\\epsi\\Acelys\\Jour 2\\Helpdesk\\run-dev.cmd"],
+      "port": 4200
+    }
+  ]
+}
