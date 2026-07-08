@@ -145,6 +145,51 @@ h2 {
   flex: none;
 }
 
+.danger-zone {
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-2);
+}
+.danger-zone .confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.confirm-text {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-right: auto;
+}
+.btn-danger-ghost,
+.btn-ghost,
+.btn-danger {
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+.btn-danger-ghost {
+  background: none;
+  border: 1px solid #fda29b;
+  color: #b42318;
+}
+.btn-danger-ghost:hover {
+  background: #fef3f2;
+}
+.btn-ghost {
+  background: var(--surface);
+  border: 1px solid var(--border-3);
+  color: var(--text-2);
+}
+.btn-danger {
+  background: #d92d20;
+  border: 1px solid #d92d20;
+  color: #fff;
+}
+
 .foot {
   display: flex;
   gap: 8px;

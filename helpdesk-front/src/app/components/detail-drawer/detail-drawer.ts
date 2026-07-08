@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 
-import { PEOPLE, Ticket } from '../../models/ticket.models';
+import { Ticket } from '../../models/ticket.models';
 import { TicketStore } from '../../services/ticket-store';
+import { AuthService } from '../../services/auth.service';
 import { PriorityBadge } from '../priority-badge/priority-badge';
 import { Avatar } from '../avatar/avatar';
 
@@ -84,6 +85,18 @@ import { Avatar } from '../avatar/avatar';
             </div>
           </div>
         </div>
+
+        <div class="danger-zone">
+          @if (store.confirmDelete()) {
+            <div class="confirm">
+              <span class="confirm-text">Supprimer définitivement ?</span>
+              <button class="btn-ghost" (click)="store.cancelDelete()">Annuler</button>
+              <button class="btn-danger" (click)="store.deleteSelected()">Confirmer</button>
+            </div>
+          } @else {
+            <button class="btn-danger-ghost" (click)="store.requestDelete()">Supprimer le ticket</button>
+          }
+        </div>
       </div>
 
       <div class="foot">
@@ -96,13 +109,13 @@ import { Avatar } from '../avatar/avatar';
 })
 export class DetailDrawer {
   protected readonly store = inject(TicketStore);
+  private readonly auth = inject(AuthService);
 
   readonly ticket = input.required<Ticket>();
 
-  protected readonly assigneeName = computed(() => {
-    const key = this.ticket().assignee;
-    return key ? PEOPLE[key]?.name ?? 'Non assigné' : 'Non assigné';
-  });
+  protected readonly assigneeName = computed(
+    () => this.auth.resolvePerson(this.ticket().assignee)?.name ?? 'Non assigné',
+  );
 
   protected readonly slaColor = computed(() => {
     const t = this.ticket();

@@ -33,4 +33,17 @@ export class TicketApiService {
     void patch;
     return of(void 0);
   }
+
+  /** POST /api/tickets */
+  create(ticket: Ticket): Observable<Ticket> {
+    // return this.http.post<Ticket>(this.baseUrl, ticket);
+    return of(ticket);
+  }
+
+  /** DELETE /api/tickets/:id */
+  remove(id: number): Observable<void> {
+    // return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    void id;
+    return of(void 0);
+  }
 }

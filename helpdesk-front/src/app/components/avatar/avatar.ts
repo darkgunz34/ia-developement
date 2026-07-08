@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { PEOPLE } from '../../models/ticket.models';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+
+import { AuthService } from '../../services/auth.service';
 
 /** Round assignee avatar showing initials, or a placeholder when unassigned. */
 @Component({
@@ -35,13 +36,12 @@ import { PEOPLE } from '../../models/ticket.models';
   `,
 })
 export class Avatar {
+  private readonly auth = inject(AuthService);
+
   /** Person key (initials), or null when unassigned. */
   readonly assignee = input.required<string | null>();
 
-  protected readonly person = computed(() => {
-    const key = this.assignee();
-    return key ? PEOPLE[key] ?? null : null;
-  });
+  protected readonly person = computed(() => this.auth.resolvePerson(this.assignee()));
 
   protected readonly name = computed(() => this.person()?.name ?? 'Non assigné');
 }

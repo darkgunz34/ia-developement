@@ -74,6 +74,18 @@ export const STATUS_ORDER: StatusKey[] = ['ouvert', 'en_cours', 'en_attente', 'f
 /** Priority order for filter dropdowns. */
 export const PRIORITY_ORDER: PriorityKey[] = ['urgente', 'haute', 'moyenne', 'basse'];
 
+/** Categories offered when creating a ticket. */
+export const CATEGORIES: readonly string[] = [
+  'Bug',
+  'API',
+  'Auth',
+  'Perf',
+  'UI',
+  'Infra',
+  'Base de données',
+  'Doc',
+];
+
 /** Convenience accessors used across components. */
 export function personOf(ticket: Ticket): Person | null {
   return ticket.assignee ? PEOPLE[ticket.assignee] ?? null : null;

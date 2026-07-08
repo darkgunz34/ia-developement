@@ -4,13 +4,13 @@ import {
   PRIORITIES,
   STATUSES,
   STATUS_ORDER,
-  PEOPLE,
   PriorityKey,
   StatusKey,
   StatusMeta,
   Ticket,
 } from '../models/ticket.models';
 import { TicketApiService } from './ticket-api.service';
+import { AuthService } from './auth.service';
 
 export type BoardView = 'kanban' | 'table';
 export type SortKey = 'title' | 'id' | 'priority' | 'status';
@@ -23,6 +23,16 @@ export interface ColumnView {
   tickets: Ticket[];
 }
 
+/** Editable fields of the "new ticket" form. */
+export interface TicketDraft {
+  title: string;
+  priority: PriorityKey;
+  status: StatusKey;
+  category: string;
+  assignee: string;
+  desc: string;
+}
+
 /**
  * Signal-based store: the single source of truth for board state.
  * UI state (filters, view, selection, drag, sort) lives here alongside the
@@ -31,6 +41,7 @@ export interface ColumnView {
 @Injectable({ providedIn: 'root' })
 export class TicketStore {
   private readonly api = inject(TicketApiService);
+  private readonly auth = inject(AuthService);
 
   // --- Raw data -------------------------------------------------------------
   private readonly _tickets = signal<Ticket[]>([]);
@@ -46,6 +57,10 @@ export class TicketStore {
   readonly dragOverColumn = signal<StatusKey | null>(null);
   readonly sortKey = signal<SortKey>('priority');
   readonly sortDir = signal<SortDir>('asc');
+
+  // Create-ticket modal + delete-confirm state.
+  readonly draft = signal<TicketDraft | null>(null);
+  readonly confirmDelete = signal(false);
 
   constructor() {
     this.load();
@@ -65,7 +80,7 @@ export class TicketStore {
       if (status !== 'all' && t.status !== status) return false;
       if (priority !== 'all' && t.priority !== priority) return false;
       if (q) {
-        const person = t.assignee ? PEOPLE[t.assignee]?.name ?? '' : '';
+        const person = this.auth.resolvePerson(t.assignee)?.name ?? '';
         const haystack = `${t.title} #${t.id} ${t.category} ${person}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
@@ -157,6 +172,72 @@ export class TicketStore {
 
   closePanel(): void {
     this.selectedId.set(null);
+    this.confirmDelete.set(false);
+  }
+
+  // --- Create ---------------------------------------------------------------
+  openCreate(): void {
+    this.draft.set({
+      title: '',
+      priority: 'moyenne',
+      status: 'ouvert',
+      category: 'Bug',
+      assignee: this.auth.user()?.acro ?? '',
+      desc: '',
+    });
+  }
+
+  closeCreate(): void {
+    this.draft.set(null);
+  }
+
+  patchDraft(changes: Partial<TicketDraft>): void {
+    this.draft.update((d) => (d ? { ...d, ...changes } : d));
+  }
+
+  /** Persists the draft as a new ticket and opens it in the detail drawer. */
+  saveDraft(): void {
+    const draft = this.draft();
+    if (!draft || !draft.title.trim()) return;
+
+    const id = this._tickets().reduce((max, t) => Math.max(max, t.id), 1000) + 1;
+    const now = new Date();
+    const created = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const ticket: Ticket = {
+      id,
+      title: draft.title.trim(),
+      priority: draft.priority,
+      status: draft.status,
+      category: draft.category,
+      assignee: draft.assignee || null,
+      created,
+      sla: 'Nouveau',
+      desc: draft.desc.trim() || 'Aucune description.',
+    };
+
+    this._tickets.update((tickets) => [ticket, ...tickets]);
+    this.api.create(ticket).subscribe();
+    this.draft.set(null);
+    this.selectedId.set(id);
+  }
+
+  // --- Delete ---------------------------------------------------------------
+  requestDelete(): void {
+    this.confirmDelete.set(true);
+  }
+
+  cancelDelete(): void {
+    this.confirmDelete.set(false);
+  }
+
+  deleteSelected(): void {
+    const id = this.selectedId();
+    if (id == null) return;
+    this._tickets.update((tickets) => tickets.filter((t) => t.id !== id));
+    this.api.remove(id).subscribe();
+    this.selectedId.set(null);
+    this.confirmDelete.set(false);
   }
 
   toggleSort(key: SortKey): void {

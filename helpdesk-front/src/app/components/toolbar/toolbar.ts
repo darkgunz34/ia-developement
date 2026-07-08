@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { PriorityKey, StatusKey } from '../../models/ticket.models';
 import { TicketStore } from '../../services/ticket-store';
+import { AuthService } from '../../services/auth.service';
 
 /** Top header: branding, search, filters, view toggle, new-ticket action. */
 @Component({
@@ -58,7 +59,19 @@ import { TicketStore } from '../../services/ticket-store';
         <button [class.active]="store.view() === 'table'" (click)="store.setView('table')">Tableau</button>
       </div>
 
-      <button class="btn-primary"><span class="plus">+</span> Nouveau ticket</button>
+      <button class="btn-primary" (click)="store.openCreate()">
+        <span class="plus">+</span> Nouveau ticket
+      </button>
+
+      @if (auth.user(); as user) {
+        <div class="user">
+          <span class="avatar" [style.background]="user.color" [title]="user.name">{{ user.acro }}</span>
+          <div class="who">
+            <div class="name">{{ user.name }}</div>
+            <button class="logout" (click)="auth.logout()">Déconnexion</button>
+          </div>
+        </div>
+      }
     </header>
   `,
   styles: `
@@ -162,10 +175,57 @@ import { TicketStore } from '../../services/ticket-store';
       line-height: 1;
       margin-top: -1px;
     }
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-left: 12px;
+      margin-left: 2px;
+      border-left: 1px solid var(--border);
+      flex: none;
+    }
+    .user .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: none;
+    }
+    .user .who {
+      line-height: 1.15;
+    }
+    .user .name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .user .logout {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .user .logout:hover {
+      color: var(--text-2);
+    }
   `,
 })
 export class Toolbar {
   protected readonly store = inject(TicketStore);
+  protected readonly auth = inject(AuthService);
 
   // Kept for template type-safety of the option values.
   protected readonly statusKeys: readonly (StatusKey | 'all')[] = [

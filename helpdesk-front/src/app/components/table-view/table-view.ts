@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 
-import { PEOPLE } from '../../models/ticket.models';
 import { SortKey, TicketStore } from '../../services/ticket-store';
+import { AuthService } from '../../services/auth.service';
 import { PriorityBadge } from '../priority-badge/priority-badge';
 import { StatusPill } from '../status-pill/status-pill';
 import { Avatar } from '../avatar/avatar';
@@ -133,6 +133,7 @@ import { Avatar } from '../avatar/avatar';
 })
 export class TableView {
   protected readonly store = inject(TicketStore);
+  private readonly auth = inject(AuthService);
 
   private readonly sortState = computed(() => ({
     key: this.store.sortKey(),
@@ -146,6 +147,6 @@ export class TableView {
   }
 
   protected name(assignee: string | null): string {
-    return assignee ? PEOPLE[assignee]?.name ?? 'Non assigné' : 'Non assigné';
+    return this.auth.resolvePerson(assignee)?.name ?? 'Non assigné';
   }
 }
