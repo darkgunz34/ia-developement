@@ -1,22 +1,26 @@
 <div class="shell">
-  <app-toolbar />
+  @if (auth.isAuthed()) {
+    <app-toolbar />
 
-  <div class="filter-bar">
-    <span><strong>{{ store.shownCount() }}</strong> tickets affichés</span>
-    @if (store.filtersActive()) {
-      <button class="clear" (click)="store.clearFilters()">Effacer les filtres</button>
+    <div class="filter-bar">
+      <span><strong>{{ store.shownCount() }}</strong> tickets affichés</span>
+      @if (store.filtersActive()) {
+        <button class="clear" (click)="store.clearFilters()">Effacer les filtres</button>
+      }
+    </div>
+
+    <main>
+      @if (store.view() === 'kanban') {
+        <app-kanban-board />
+      } @else {
+        <app-table-view />
+      }
+    </main>
+
+    @if (store.selected(); as ticket) {
+      <app-detail-drawer [ticket]="ticket" />
     }
-  </div>
-
-  <main>
-    @if (store.view() === 'kanban') {
-      <app-kanban-board />
-    } @else {
-      <app-table-view />
-    }
-  </main>
-
-  @if (store.selected(); as ticket) {
-    <app-detail-drawer [ticket]="ticket" />
+  } @else {
+    <app-login-page />
   }
 </div>
